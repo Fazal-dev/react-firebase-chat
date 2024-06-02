@@ -18,6 +18,63 @@ const ChatList = () => {
           className="add"
         />
       </div>
+
+      <div className="item">
+        <img src="./avatar.png" alt="avatar" />
+        <div className="texts">
+          <span>fazal xox</span>
+          <p>hello</p>
+        </div>
+      </div>
+      <div className="item">
+        <img src="./avatar.png" alt="avatar" />
+        <div className="texts">
+          <span>fazal xox</span>
+          <p>hello</p>
+        </div>
+      </div>
+      <div className="item">
+        <img src="./avatar.png" alt="avatar" />
+        <div className="texts">
+          <span>fazal xox</span>
+          <p>hello</p>
+        </div>
+      </div>
+      <div className="item">
+        <img src="./avatar.png" alt="avatar" />
+        <div className="texts">
+          <span>fazal xox</span>
+          <p>hello</p>
+        </div>
+      </div>
+      <div className="item">
+        <img src="./avatar.png" alt="avatar" />
+        <div className="texts">
+          <span>fazal xox</span>
+          <p>hello</p>
+        </div>
+      </div>
+      <div className="item">
+        <img src="./avatar.png" alt="avatar" />
+        <div className="texts">
+          <span>fazal xox</span>
+          <p>hello</p>
+        </div>
+      </div>
+      <div className="item">
+        <img src="./avatar.png" alt="avatar" />
+        <div className="texts">
+          <span>fazal xox</span>
+          <p>hello</p>
+        </div>
+      </div>
+      <div className="item">
+        <img src="./avatar.png" alt="avatar" />
+        <div className="texts">
+          <span>fazal xox</span>
+          <p>hello</p>
+        </div>
+      </div>
     </div>
   );
 };
