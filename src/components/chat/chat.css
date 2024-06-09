@@ -55,6 +55,7 @@
   }
 
   .center {
+    scrollbar-width: none;
     padding: 20px;
     flex: 1;
     margin: auto;
