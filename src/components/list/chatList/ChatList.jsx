@@ -11,6 +11,7 @@ const ChatList = () => {
   const { currentUser } = useUserStore();
   const { changeChat, chatId } = useChatStore();
   const [addMode, setaddMode] = useState(false);
+  const [input, setInput] = useState("");
   const [chats, setChats] = useState([]);
 
   useEffect(() => {
@@ -58,13 +59,23 @@ const ChatList = () => {
     }
   };
 
+  const filterdChats = chats.filter((c) =>
+    c.user.username.toLowerCase().includes(input.toLowerCase())
+  );
+
   return (
     <>
       <div className="chatList">
         <div className="search">
           <div className="searchBar">
             <img src="./search.png" alt="search" />
-            <input type="text" placeholder="Search" />
+            <input
+              type="text"
+              placeholder="Search"
+              onChange={(e) => {
+                setInput(e.target.value);
+              }}
+            />
           </div>
           <img
             onClick={() => {
@@ -75,7 +86,7 @@ const ChatList = () => {
             className="add"
           />
         </div>
-        {chats.map((chat, index) => (
+        {filterdChats.map((chat, index) => (
           <div
             className="item"
             key={index}
@@ -84,9 +95,20 @@ const ChatList = () => {
               backgroundColor: chat?.isSeen ? "transparent" : "#5183fe",
             }}
           >
-            <img src={chat.user.avatar || "./avatar.png"} alt="avatar" />
+            <img
+              src={
+                chat.user.blocked.includes(currentUser.id)
+                  ? "./avatar.png"
+                  : chat.user.avatar
+              }
+              alt="avatar"
+            />
             <div className="texts">
-              <span>{chat.user.username}</span>
+              <span>
+                {chat.user.blocked.includes(currentUser.id)
+                  ? "User"
+                  : chat.user.username}
+              </span>
               <p>{chat.lastMessage}</p>
             </div>
           </div>

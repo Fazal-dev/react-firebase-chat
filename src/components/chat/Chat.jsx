@@ -11,13 +11,28 @@ import {
 import { db } from "../../lib/firebase";
 import useChatStore from "../../lib/chatStore";
 import useUserStore from "../../lib/userStore";
+import upload from "../../lib/upload";
 const Chat = () => {
   const [open, setopen] = useState(false);
-  const { chatId, user } = useChatStore();
+  const { chatId, user, isCurrentUserBlocked, isReceiverBlocked } =
+    useChatStore();
   const { currentUser } = useUserStore();
   const [chats, setChats] = useState({});
   const [text, settext] = useState("");
+  const [img, setImg] = useState({
+    file: null,
+    url: "",
+  });
+
   const endRef = useRef(null);
+  const handleImage = (e) => {
+    if (e.target.files[0]) {
+      setImg({
+        file: e.target.files[0],
+        url: URL.createObjectURL(e.target.files[0]),
+      });
+    }
+  };
   const handleEmoji = (event) => {
     settext((prev) => prev + event.emoji);
     setopen(false);
@@ -37,16 +52,23 @@ const Chat = () => {
     };
   }, [chatId]);
   const handleSend = async () => {
-    if (text === "") return;
+    let imgUrl = null;
 
     try {
+      if (img.file) {
+        console.log("Uploading image...");
+        imgUrl = await upload(img.file);
+        console.log("Image uploaded successfully: ", imgUrl);
+      }
       await updateDoc(doc(db, "chats", chatId), {
         messages: arrayUnion({
           senderId: currentUser.id,
           text,
           createdAt: new Date(),
+          ...(imgUrl && { img: imgUrl }),
         }),
       });
+
       const userIds = [currentUser.id, user.id];
       userIds.forEach(async (id) => {
         const userChatsRef = doc(db, "userchats", id);
@@ -69,14 +91,17 @@ const Chat = () => {
     } catch (error) {
       console.log(error);
     }
+    setImg({ file: null, url: "" });
+    settext("");
   };
+
   return (
     <div className="chat">
       <div className="top">
         <div className="user">
-          <img src="./avatar.png" alt="avatar" />
+          <img src={user?.avatar || "./avatar.png"} alt="avatar" />
           <div className="texts">
-            <span> fazal davind</span>
+            <span> {user?.username}</span>
             <p>Lorem ipsum dolor sit amet</p>
           </div>
         </div>
@@ -88,7 +113,12 @@ const Chat = () => {
       </div>
       <div className="center">
         {chats?.messages?.map((message) => (
-          <div className="message own" key={message?.createdAt}>
+          <div
+            className={
+              message.senderId === currentUser.id ? "message own" : "message"
+            }
+            key={message?.createdAt}
+          >
             <div className="texts">
               {message.img && <img src={message.img} />}
               <p>{message.text}</p>
@@ -96,18 +126,37 @@ const Chat = () => {
             </div>
           </div>
         ))}
+        {img.url && (
+          <div className="message own ">
+            <div className="texts">
+              <img src={img.url} />
+            </div>
+          </div>
+        )}
 
         <div ref={endRef}></div>
       </div>
       <div className="bottom">
         <div className="icons">
-          <img src="./img.png" alt="" />
+          <label htmlFor="file">
+            <img src="./img.png" alt="" />
+          </label>
+          <input
+            type="file"
+            id="file"
+            onChange={handleImage}
+            style={{ display: "none" }}
+          />
           <img src="./camera.png" alt="" />
           <img src="./mic.png" alt="" />
         </div>
         <input
           type="text"
-          placeholder="Type a message..."
+          placeholder={
+            isCurrentUserBlocked || isReceiverBlocked
+              ? "You can not send a message"
+              : "Type a message..."
+          }
           value={text}
           onChange={(e) => {
             settext(e.target.value);
@@ -127,7 +176,11 @@ const Chat = () => {
             </div>
           )}
         </div>
-        <button className="sendButton" onClick={handleSend}>
+        <button
+          disabled={isCurrentUserBlocked || isReceiverBlocked}
+          className="sendButton"
+          onClick={handleSend}
+        >
           Send
         </button>
       </div>
