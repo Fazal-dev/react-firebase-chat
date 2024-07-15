@@ -2,12 +2,14 @@ import React, { useEffect, useState } from "react";
 import "./chatList.css";
 import AddUser from "./addUser/AddUser";
 import useUserStore from "../../../lib/userStore";
-import { doc, onSnapshot } from "firebase/firestore";
+import { doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from "../../../lib/firebase";
 import { getDoc } from "firebase/firestore";
+import useChatStore from "../../../lib/chatStore";
 
 const ChatList = () => {
   const { currentUser } = useUserStore();
+  const { changeChat, chatId } = useChatStore();
   const [addMode, setaddMode] = useState(false);
   const [chats, setChats] = useState([]);
 
@@ -17,7 +19,7 @@ const ChatList = () => {
       async (res) => {
         const items = res.data().chats;
         const promises = items.map(async (item) => {
-          const userDocRef = doc(db, "users", item.receverId);
+          const userDocRef = doc(db, "users", item.receiverId);
           const userDocSnap = await getDoc(userDocRef);
           const user = userDocSnap.data();
           return { ...item, user };
@@ -32,6 +34,30 @@ const ChatList = () => {
       unsub();
     };
   }, [currentUser.id]);
+
+  const handleSelet = async (chat) => {
+    const userChats = chats.map((item) => {
+      const { user, ...rest } = item;
+      return rest;
+    });
+
+    const chatIndex = userChats.findIndex(
+      (item) => item.chatId === chat.chatId
+    );
+
+    userChats[chatIndex].isSeen = true;
+
+    const userChatRef = doc(db, "userchats", currentUser.id);
+    try {
+      await updateDoc(userChatRef, {
+        chats: userChats,
+      });
+      changeChat(chat?.chatId, chat?.user);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   return (
     <>
       <div className="chatList">
@@ -49,11 +75,18 @@ const ChatList = () => {
             className="add"
           />
         </div>
-        {chats.map((chat) => (
-          <div className="item" key={chat.chatId}>
-            <img src="./avatar.png" alt="avatar" />
+        {chats.map((chat, index) => (
+          <div
+            className="item"
+            key={index}
+            onClick={() => handleSelet(chat)}
+            style={{
+              backgroundColor: chat?.isSeen ? "transparent" : "#5183fe",
+            }}
+          >
+            <img src={chat.user.avatar || "./avatar.png"} alt="avatar" />
             <div className="texts">
-              <span>fazal xox</span>
+              <span>{chat.user.username}</span>
               <p>{chat.lastMessage}</p>
             </div>
           </div>

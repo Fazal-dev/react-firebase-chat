@@ -8,6 +8,7 @@ import {
 } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import upload from "../../lib/upload.js";
+
 const Login = () => {
   const [avatar, setavatar] = useState({
     file: null,
@@ -38,8 +39,14 @@ const Login = () => {
       });
       toast.success(`Account created you can login now`);
     } catch (error) {
+      if (error.code === "auth/email-already-in-use") {
+        toast.error(
+          "Email already in use. Please use a different email address."
+        );
+      } else {
+        toast.error("An error occurred. Please try again.");
+      }
       console.log(error);
-      toast.error(error.message);
     } finally {
       setloading(false);
     }
